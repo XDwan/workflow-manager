@@ -15,8 +15,15 @@ minimap2-asm20:
     - "{paf}"
   path:
     input:
-      - reference
-      - contig
+      reference:
+        type: fa
+        step: input
+      contig:
+        type: fa
+        step: input
     output:
-      - paf
+      paf:
+        name: contig
+        type: paf
+        step: minimap2
 

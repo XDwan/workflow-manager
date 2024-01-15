@@ -1,46 +1,64 @@
-import yaml
+import pandas as pd
 
-
-def load_yaml(path):
-    with open(path, 'r') as f:
-        data = yaml.load(f, Loader=yaml.FullLoader)
-    return data
-
-
-def add_config(key, value):
-    return key + " " + str(value) + " "
+from lib.utils import *
 
 
 class Step:
-    def __init__(self, step_name, step_dir):
+    def __init__(self, step_name, workdir):
         self.name = step_name
+        self.script_dir = dir_create(workdir, 'script')
+        self.input_dir = dir_create(workdir, 'input')
+        self.output_dir = dir_create(workdir, 'output')
+        self.log_dir = dir_create(workdir, 'log')
+        self.input_dict = None
+        self.output_dict = None
         self.config = None
-        self.input = None
-        self.output = None
         self.command = None
 
-    def parse_config(self, step_config):
-        command = ''
+    def parse_config(self, step_config, config_name):
+        """
+        通过config_name寻找config中的对应的config 减少文件数量
+        :param config_name:
+        :param step_config:
+        :return:
+        """
+        self.command = ''
         input_list = []
         output_list = []
-        config = load_yaml(step_config)[self.name]
-        command += config['command'] + " "
-        for setting in config['config']:
-            print(type(setting))
+        self.config = load_yaml(step_config)[config_name]
+        self.input_dict = self.config['path']['input']
+        self.output_dict = self.config['path']['output']
+        self.command += self.config['command'] + " "
+        for setting in self.config['config']:
             if type(setting) is dict:
                 for key in setting.keys():
-                    print(key)
                     value = setting[key]
-                    command += add_config(key, value)
+                    self.command += add_config(key, value)
             else:
-                command += setting + " "
-        self.command = command
-        return command
+                self.command += setting + " "
+        return self.command
+
+    def parse_database(self, database):
+        input_data_path_list = []
+        input_data_name_list = []
+        for key in self.input_dict.keys():
+            data_type = self.input_dict[key]['type']
+            data_step = self.input_dict[key]['step']
+            input_data_path_list.append(database.loc[(database['type'] == data_type) & (database['step'] == data_step)]['path'])
+            input_data_name_list.append(database.loc[(database['type'] == data_type) & (database['step'] == data_step)]['name'])
+        input_path = merge_list(input_data_path_list)
+        input_name = merge_list(input_data_name_list)
+        input_path_frame = pd.DataFrame(input_path, columns=self.input_dict.keys())
+        input_name_frame = pd.DataFrame(input_name, columns=self.input_dict.keys())
+        input_path_frame
+        return output_data_frame
 
 
 if __name__ == '__main__':
-    minimap2 = Step('minimap2-asm20', 'D:\\tools\work-manager\config\\temple.yaml')
+    minimap2 = Step('minimap2-asm20', 'E://test-workflow')
     config = load_yaml('D:\\tools\work-manager\config\\temple.yaml')
     print(config)
-    command = minimap2.parse_config('D:\\tools\work-manager\config\\temple.yaml')
+    command = minimap2.parse_config('D:\\tools\work-manager\config\\temple.yaml', 'minimap2-asm20')
+    print(minimap2.input_dict)
+    print(minimap2.output_dict)
     print(command)

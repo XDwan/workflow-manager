@@ -1,23 +1,9 @@
 import pandas as pd
 import numpy as np
-import os
 
-
-def dir_create(path, dir_name):
-    dir_path = os.path.join(path, dir_name)
-    if not os.path.exists(dir_path):
-        os.mkdir(dir_path)
-    return dir_path
-
-
-def path_join(path, dir_name):
-    return os.path.join(path, dir_name)
-
-
-def check_file(path):
-    if os.path.exists(path):
-        return True
-    return False
+from lib.database import Database
+from lib.step import Step
+from lib.utils import *
 
 
 class Workflow:
@@ -32,19 +18,25 @@ class Workflow:
         :param work_dir: 工作文件夹
         """
 
+        self.step_list = []
         self.database = None
         self.work_dir = work_dir
         self.script_dir = dir_create(self.work_dir, 'script')
-        self.input_dir = dir_create(self.work_dir, 'script')
+        self.input_dir = dir_create(self.work_dir, 'input')
         self.config_dir = dir_create(self.work_dir, 'config')
         self.workflow_dir = dir_create(self.work_dir, 'workflow')
         self.log = dir_create(self.work_dir, 'log')
 
     def load_database(self):
         database_path = path_join(self.log, 'database.csv')
-        if check_file(database_path):
-            self.database = pd.read_csv(database_path)
-        else:
-            self.database = pd.DataFrame([], columns=['name', 'type', 'step', 'path'])
-            self.database.to_csv(database_path)
+        self.database = Database(database_path)
 
+    def create_step(self, step_name, config_file, config_name):
+        step = Step(step_name)
+        self.step_list.append(step)
+        dir_create(self.workflow_dir, step_name)
+        step.parse_config(path_join(self.config_dir, config_file), config_name)  # 在config文件夹中寻找config file
+        return step
+
+    def creat_pbs(self):
+        pass
