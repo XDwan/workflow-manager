@@ -1,0 +1,22 @@
+minimap2-asm20:
+  env: bio
+  command: minimap2
+  config:
+    - -t: 48
+    - -x: asm20
+    - -Y: --secondary=yes
+    - -N: 1
+    - --cs
+    - -c
+    - --paf-no-hit
+    - "{reference}"
+    - "{contig}"
+    - '>'
+    - "{paf}"
+  path:
+    input:
+      - reference
+      - contig
+    output:
+      - paf
+
