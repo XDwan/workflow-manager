@@ -44,14 +44,24 @@ class Step:
         for key in self.input_dict.keys():
             data_type = self.input_dict[key]['type']
             data_step = self.input_dict[key]['step']
-            input_data_path_list.append(database.loc[(database['type'] == data_type) & (database['step'] == data_step)]['path'])
-            input_data_name_list.append(database.loc[(database['type'] == data_type) & (database['step'] == data_step)]['name'])
+            input_data_path_list.append(
+                database.loc[(database['type'] == data_type) & (database['step'] == data_step)]['path'])
+            input_data_name_list.append(
+                database.loc[(database['type'] == data_type) & (database['step'] == data_step)]['name'])
         input_path = merge_list(input_data_path_list)
         input_name = merge_list(input_data_name_list)
-        input_path_frame = pd.DataFrame(input_path, columns=self.input_dict.keys())
+        path_frame = pd.DataFrame(input_path, columns=self.input_dict.keys())
         input_name_frame = pd.DataFrame(input_name, columns=self.input_dict.keys())
-        input_path_frame
-        return output_data_frame
+        new_name_list = []
+        for idx, row in input_name_frame.iterrows():
+            new_name_list.append('.'.join(row))
+        output_frame = pd.DataFrame([], columns=['name', 'type', 'step', 'path'])
+        for output in self.config['path']['output'].keys():
+            ext = output
+            content = self.config['path']['output'][output]
+            temp
+        path_frame['output_name'] = new_name_list
+        return path_frame
 
 
 if __name__ == '__main__':
